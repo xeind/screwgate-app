@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- App sandbox disabled: Screwgate writes to ~/.config/karabiner and
+         launches launchctl, both of which require full disk access that
+         the sandbox prevents. For open-source / local distribution only. -->
+    <key>com.apple.security.app-sandbox</key>
+    <false/>
+
+    <!-- Needed for NSEvent.addGlobalMonitorForEvents (key recording) -->
+    <key>com.apple.security.temporary-exception.apple-events</key>
+    <true/>
+</dict>
+</plist>
