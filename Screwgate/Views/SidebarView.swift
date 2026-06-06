@@ -12,12 +12,13 @@ struct SidebarView: View {
 
     var body: some View {
         List(selection: $selectedSection) {
-            // ── Hyper Key picker ───────────────────────────────────────
+            // ── Settings ───────────────────────────────────────────────
             Section {
                 HStack {
                     Image(systemName: "capslock.fill")
                         .foregroundColor(.secondary)
                         .font(.system(size: 11))
+                        .frame(width: 16)
                     Picker("Hyper Key", selection: $appState.hyperKey) {
                         ForEach(HyperKey.allCases) { key in
                             Text(key.displayName).tag(key)
@@ -26,9 +27,25 @@ struct SidebarView: View {
                     .labelsHidden()
                     .pickerStyle(.menu)
                 }
-                .padding(.vertical, 2)
+                .padding(.vertical, 1)
+
+                HStack {
+                    Image(systemName: "keyboard")
+                        .foregroundColor(.secondary)
+                        .font(.system(size: 11))
+                        .frame(width: 16)
+                    Picker("Layout", selection: $appState.keyboardLayout) {
+                        ForEach(KeyboardLayout.allCases) { layout in
+                            Text(layout.rawValue).tag(layout)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .help(appState.keyboardLayout.description)
+                }
+                .padding(.vertical, 1)
             } header: {
-                Text("Hyper Key")
+                Text("Settings")
             }
 
             // ── Direct Bindings ────────────────────────────────────────

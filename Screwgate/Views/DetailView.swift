@@ -70,6 +70,7 @@ struct SublayerDetail: View {
             HStack {
                 KeyboardLayoutView(
                     activeKeys: activeKeys,
+                    layout: appState.keyboardLayout,
                     hyperKeyCode: appState.hyperKey.rawValue
                 ) { tappedKey in
                     if activeKeys.contains(tappedKey) {

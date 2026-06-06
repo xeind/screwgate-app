@@ -1,51 +1,78 @@
 import SwiftUI
 import AppKit
 
-// MARK: - ANSI keyboard preview
+// MARK: - ANSI keyboard preview (60 / 65 / 75 / TKL)
 
 struct KeyboardLayoutView: View {
     let activeKeys: Set<String>
-    var hyperKeyCode: String = "caps_lock"
-    /// Fires for every tappable key (active or not). Parent decides add vs. navigate.
+    var layout: KeyboardLayout = .sixtyFive
+    var hyperKeyCode: String   = "caps_lock"
     var onKeyTap: ((String) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
-            // ── Number row ─────────────────────────────────────
-            HStack(spacing: 2) {
-                cap("escape")
-                Rectangle().fill(.clear).frame(width: 6)
-                cap("grave_accent_and_tilde")
-                caps(["1","2","3","4","5","6","7","8","9","0","hyphen","equal_sign"])
-                cap("delete_or_backspace", w: 32)
+
+            // ── F-row (75% and TKL only) ──────────────────────────
+            if layout == .seventyFive || layout == .tkl {
+                HStack(spacing: 2) {
+                    cap("escape", w: 20)
+                    Rectangle().fill(.clear).frame(width: layout == .tkl ? 12 : 4)
+                    ForEach(fKeys, id: \.self) { cap($0, w: layout == .tkl ? 20 : 17) }
+                    if layout == .tkl {
+                        Rectangle().fill(.clear).frame(width: 6)
+                        caps(["print_screen", "scroll_lock", "pause"])
+                    }
+                }
             }
 
-            // ── QWERTY row ──────────────────────────────────────
+            // ── Number row ────────────────────────────────────────
+            HStack(spacing: 2) {
+                // 60/65: Escape lives here; 75/TKL: it moved to F-row
+                if layout == .sixty || layout == .sixtyFive {
+                    cap("escape", w: 20)
+                    Rectangle().fill(.clear).frame(width: 6)
+                }
+                caps(numberRowKeys)
+                cap("delete_or_backspace", w: 32)
+                if layout == .tkl {
+                    Rectangle().fill(.clear).frame(width: 6)
+                    caps(["insert", "home", "page_up"])
+                }
+            }
+
+            // ── QWERTY row ────────────────────────────────────────
             HStack(spacing: 2) {
                 cap("tab", w: 30)
                 caps(["q","w","e","r","t","y","u","i","o","p","open_bracket","close_bracket"])
                 cap("backslash", w: 26)
+                if layout == .tkl {
+                    Rectangle().fill(.clear).frame(width: 6)
+                    caps(["delete_forward", "end", "page_down"])
+                }
             }
 
-            // ── Home row ────────────────────────────────────────
+            // ── Home row ──────────────────────────────────────────
             HStack(spacing: 2) {
-                cap("caps_lock", w: 34, forceLabel: hyperKeyCode == "caps_lock" ? "Hyper" : nil,
+                cap("caps_lock", w: 34,
+                    forceLabel: hyperKeyCode == "caps_lock" ? "Hyper" : nil,
                     dead: hyperKeyCode == "caps_lock")
                 caps(["a","s","d","f","g","h","j","k","l","semicolon","quote"])
                 cap("return_or_enter", w: 40)
             }
 
-            // ── ZXCV row (shift stagger) ────────────────────────
+            // ── ZXCV row ─────────────────────────────────────────
             HStack(spacing: 2) {
-                Rectangle().fill(.clear).frame(width: 42)  // ⇧ placeholder
+                Rectangle().fill(.clear).frame(width: 42)   // ⇧ placeholder
                 caps(["z","x","c","v","b","n","m","comma","period","slash"])
             }
 
-            // ── Bottom row ──────────────────────────────────────
+            // ── Bottom row ────────────────────────────────────────
             HStack(spacing: 2) {
-                cap("spacebar", w: 120)
-                Rectangle().fill(.clear).frame(width: 6)
-                caps(["left_arrow","down_arrow","up_arrow","right_arrow"])
+                cap("spacebar", w: layout == .sixty ? 160 : 120)
+                if layout != .sixty {
+                    Rectangle().fill(.clear).frame(width: 6)
+                    caps(["left_arrow", "down_arrow", "up_arrow", "right_arrow"])
+                }
             }
         }
         .padding(10)
@@ -56,7 +83,12 @@ struct KeyboardLayoutView: View {
         )
     }
 
-    // ── Helpers ────────────────────────────────────────────────
+    // ── Static key lists ─────────────────────────────────────────
+
+    private let fKeys = ["f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12"]
+    private let numberRowKeys = ["grave_accent_and_tilde","1","2","3","4","5","6","7","8","9","0","hyphen","equal_sign"]
+
+    // ── Helpers ──────────────────────────────────────────────────
 
     @ViewBuilder
     private func caps(_ codes: [String]) -> some View {
@@ -72,12 +104,7 @@ struct KeyboardLayoutView: View {
     ) -> some View {
         let label = forceLabel ?? KeyDisplay.symbol(for: code)
         let active = activeKeys.contains(code)
-        KeyCap(
-            label: label,
-            width: w,
-            isActive: active,
-            isDead: dead
-        ) {
+        KeyCap(label: label, width: w, isActive: active, isDead: dead) {
             if !dead { onKeyTap?(code) }
         }
     }
@@ -88,22 +115,20 @@ struct KeyboardLayoutView: View {
 private struct KeyCap: View {
     let label: String
     let width: CGFloat
-    let isActive: Bool   // has an existing binding
-    let isDead: Bool     // non-trigger key (Hyper key itself)
+    let isActive: Bool
+    let isDead: Bool
     let onTap: () -> Void
 
     @State private var isHovered = false
 
     private var bg: Color {
-        if isDead   { return Color(nsColor: .controlBackgroundColor).opacity(0.5) }
+        if isDead   { return Color(nsColor: .controlBackgroundColor).opacity(0.4) }
         if isActive { return .accentColor }
-        return isHovered
-            ? Color.accentColor.opacity(0.12)
-            : Color(nsColor: .controlBackgroundColor)
+        return isHovered ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor)
     }
 
     private var fg: Color {
-        if isDead   { return .secondary.opacity(0.4) }
+        if isDead   { return .secondary.opacity(0.35) }
         if isActive { return .white }
         return isHovered ? .accentColor : .secondary
     }
@@ -113,7 +138,7 @@ private struct KeyCap: View {
             Text(label)
                 .font(.system(size: 9, weight: isActive ? .bold : .medium, design: .monospaced))
                 .lineLimit(1)
-                .minimumScaleFactor(0.65)
+                .minimumScaleFactor(0.6)
                 .foregroundStyle(fg)
                 .frame(width: width, height: 19)
                 .background {
@@ -129,13 +154,14 @@ private struct KeyCap: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 3)
                         .strokeBorder(
-                            isActive ? Color.accentColor.opacity(0.6)
-                            : (isHovered ? Color.accentColor.opacity(0.4) : Color.secondary.opacity(0.15)),
+                            isActive   ? Color.accentColor.opacity(0.6)
+                            : isHovered ? Color.accentColor.opacity(0.35)
+                                        : Color.secondary.opacity(0.15),
                             lineWidth: 0.5
                         )
                 )
                 .shadow(
-                    color: isActive ? Color.accentColor.opacity(0.4) : .black.opacity(0.08),
+                    color: isActive ? Color.accentColor.opacity(0.4) : .black.opacity(0.07),
                     radius: isActive ? 3 : 0.5,
                     x: 0, y: 1
                 )
@@ -148,16 +174,30 @@ private struct KeyCap: View {
             if hovering { NSCursor.pointingHand.push() }
             else        { NSCursor.pop() }
         }
-        .help(isDead ? "Hyper key — not available as a trigger"
-              : isActive ? "Jump to binding" : "Add binding for this key")
+        .help(isDead   ? "Hyper key — cannot be used as a trigger"
+              : isActive ? "Jump to binding"
+                         : "Add binding for this key")
     }
 }
 
-#Preview {
+// MARK: - Preview
+
+#Preview("65%") {
     KeyboardLayoutView(
         activeKeys: ["j","k","h","l","semicolon","spacebar","return_or_enter"],
+        layout: .sixtyFive,
         hyperKeyCode: "caps_lock"
     )
     .padding()
-    .frame(width: 420)
+    .frame(width: 440)
+}
+
+#Preview("TKL") {
+    KeyboardLayoutView(
+        activeKeys: ["j","k","h","l","f5","insert"],
+        layout: .tkl,
+        hyperKeyCode: "caps_lock"
+    )
+    .padding()
+    .frame(width: 600)
 }

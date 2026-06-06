@@ -1,5 +1,25 @@
 import Foundation
 
+// MARK: - Keyboard layout form factor
+
+enum KeyboardLayout: String, CaseIterable, Identifiable, Codable {
+    case sixty       = "60%"
+    case sixtyFive   = "65%"
+    case seventyFive = "75%"
+    case tkl         = "TKL"
+
+    var id: String { rawValue }
+
+    var description: String {
+        switch self {
+        case .sixty:       return "60% — no arrows, no F-row"
+        case .sixtyFive:   return "65% — adds arrow keys"
+        case .seventyFive: return "75% — adds F-row"
+        case .tkl:         return "TKL — full without numpad"
+        }
+    }
+}
+
 // MARK: - Hyper key choice
 
 enum HyperKey: String, CaseIterable, Identifiable, Codable {

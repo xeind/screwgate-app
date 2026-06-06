@@ -29,6 +29,9 @@ class AppState: ObservableObject {
     @Published var hyperKey: HyperKey = .capsLock {
         didSet { saveToDefaults() }
     }
+    @Published var keyboardLayout: KeyboardLayout = .sixtyFive {
+        didSet { saveToDefaults() }
+    }
 
     // Direct Hyper+key bindings (no sublayer needed)
     @Published var layers: [Layer] = []
@@ -136,7 +139,8 @@ class AppState: ObservableObject {
     // MARK: - Persistence
 
     func saveToDefaults() {
-        defaults.set(hyperKey.rawValue, forKey: "hyperKey")
+        defaults.set(hyperKey.rawValue,      forKey: "hyperKey")
+        defaults.set(keyboardLayout.rawValue, forKey: "keyboardLayout")
         if let data = try? JSONEncoder().encode(layers)    { defaults.set(data, forKey: "layers") }
         if let data = try? JSONEncoder().encode(sublayers) { defaults.set(data, forKey: "sublayers") }
     }
@@ -144,6 +148,9 @@ class AppState: ObservableObject {
     func loadFromDefaults() {
         if let raw = defaults.string(forKey: "hyperKey"), let hk = HyperKey(rawValue: raw) {
             hyperKey = hk
+        }
+        if let raw = defaults.string(forKey: "keyboardLayout"), let kl = KeyboardLayout(rawValue: raw) {
+            keyboardLayout = kl
         }
         if let data = defaults.data(forKey: "layers"),
            let saved = try? JSONDecoder().decode([Layer].self, from: data) {
