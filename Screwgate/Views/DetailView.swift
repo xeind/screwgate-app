@@ -64,6 +64,13 @@ struct SublayerDetail: View {
         Set(sublayer.bindings.map(\.triggerKey))
     }
 
+    private var tintColor: Color {
+        guard let index = appState.sublayers.firstIndex(where: { $0.id == sublayer.id }) else {
+            return .accentColor
+        }
+        return SublayerPalette.color(at: index)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Keyboard map header
@@ -71,7 +78,8 @@ struct SublayerDetail: View {
                 KeyboardLayoutView(
                     activeKeys: activeKeys,
                     layout: appState.keyboardLayout,
-                    hyperKeyCode: appState.hyperKey.rawValue
+                    hyperKeyCode: appState.hyperKey.rawValue,
+                    activeColor: tintColor
                 ) { tappedKey in
                     if activeKeys.contains(tappedKey) {
                         // Scroll to + highlight existing binding
@@ -117,7 +125,8 @@ struct SublayerDetail: View {
                 ForEach(sublayer.bindings) { binding in
                     BindingDetailRow(
                         binding: binding,
-                        isHighlighted: binding.triggerKey == highlightedKey
+                        isHighlighted: binding.triggerKey == highlightedKey,
+                        tintColor: tintColor
                     ) {
                         onEditBinding(binding)
                     } onDelete: {
@@ -193,6 +202,7 @@ struct DirectBindingsDetail: View {
 struct BindingDetailRow: View {
     let binding: KeyBinding
     var isHighlighted: Bool = false
+    var tintColor: Color = .accentColor
     let onEdit: () -> Void
     let onDelete: () -> Void
 
@@ -201,12 +211,12 @@ struct BindingDetailRow: View {
             // Keycap badge
             Text(KeyDisplay.symbol(for: binding.triggerKey))
                 .font(.system(size: 13, weight: .bold, design: .monospaced))
-                .foregroundStyle(isHighlighted ? AnyShapeStyle(.white) : AnyShapeStyle(Color.accentColor))
+                .foregroundStyle(isHighlighted ? AnyShapeStyle(.white) : AnyShapeStyle(tintColor))
                 .frame(width: 38, height: 28)
                 .background {
                     if isHighlighted {
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.accentColor)
+                            .fill(tintColor)
                         RoundedRectangle(cornerRadius: 6)
                             .fill(LinearGradient(
                                 colors: [.white.opacity(0.2), .clear],
@@ -214,20 +224,26 @@ struct BindingDetailRow: View {
                             ))
                     } else {
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.accentColor.opacity(0.1))
+                            .fill(tintColor.opacity(0.1))
                     }
                 }
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
                         .strokeBorder(
-                            isHighlighted ? Color.accentColor : Color.accentColor.opacity(0.2),
+                            isHighlighted ? tintColor : tintColor.opacity(0.2),
                             lineWidth: 0.5
                         )
                 )
                 .shadow(
-                    color: isHighlighted ? Color.accentColor.opacity(0.4) : .clear,
+                    color: isHighlighted ? tintColor.opacity(0.4) : .clear,
                     radius: 4, x: 0, y: 2
                 )
+
+            // Action type icon
+            Image(systemName: binding.actionType.systemImage)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .frame(width: 16)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(binding.bindingDescription)

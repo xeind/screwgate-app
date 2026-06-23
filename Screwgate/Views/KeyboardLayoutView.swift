@@ -7,6 +7,7 @@ struct KeyboardLayoutView: View {
     let activeKeys: Set<String>
     var layout: KeyboardLayout = .sixtyFive
     var hyperKeyCode: String   = "caps_lock"
+    var activeColor: Color     = .accentColor
     var onKeyTap: ((String) -> Void)? = nil
 
     var body: some View {
@@ -75,6 +76,7 @@ struct KeyboardLayoutView: View {
                 }
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
         .padding(10)
         .background(.quinary, in: RoundedRectangle(cornerRadius: 10))
         .overlay(
@@ -104,7 +106,7 @@ struct KeyboardLayoutView: View {
     ) -> some View {
         let label = forceLabel ?? KeyDisplay.symbol(for: code)
         let active = activeKeys.contains(code)
-        KeyCap(label: label, width: w, isActive: active, isDead: dead) {
+        KeyCap(label: label, width: w, isActive: active, isDead: dead, activeColor: activeColor) {
             if !dead { onKeyTap?(code) }
         }
     }
@@ -117,20 +119,21 @@ private struct KeyCap: View {
     let width: CGFloat
     let isActive: Bool
     let isDead: Bool
+    let activeColor: Color
     let onTap: () -> Void
 
     @State private var isHovered = false
 
     private var bg: Color {
         if isDead   { return Color(nsColor: .controlBackgroundColor).opacity(0.4) }
-        if isActive { return .accentColor }
-        return isHovered ? Color.accentColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor)
+        if isActive { return activeColor }
+        return isHovered ? activeColor.opacity(0.12) : Color(nsColor: .controlBackgroundColor)
     }
 
     private var fg: Color {
         if isDead   { return .secondary.opacity(0.35) }
         if isActive { return .white }
-        return isHovered ? .accentColor : .secondary
+        return isHovered ? activeColor : .secondary
     }
 
     var body: some View {
@@ -154,14 +157,14 @@ private struct KeyCap: View {
                 .overlay(
                     RoundedRectangle(cornerRadius: 3)
                         .strokeBorder(
-                            isActive   ? Color.accentColor.opacity(0.6)
-                            : isHovered ? Color.accentColor.opacity(0.35)
+                            isActive   ? activeColor.opacity(0.6)
+                            : isHovered ? activeColor.opacity(0.35)
                                         : Color.secondary.opacity(0.15),
                             lineWidth: 0.5
                         )
                 )
                 .shadow(
-                    color: isActive ? Color.accentColor.opacity(0.4) : .black.opacity(0.07),
+                    color: isActive ? activeColor.opacity(0.4) : .black.opacity(0.07),
                     radius: isActive ? 3 : 0.5,
                     x: 0, y: 1
                 )

@@ -58,6 +58,15 @@ enum ActionType: String, CaseIterable, Identifiable, Codable {
         case .shellCommand: return "Shell"
         }
     }
+
+    var systemImage: String {
+        switch self {
+        case .keyPress:     return "keyboard"
+        case .url:          return "globe"
+        case .openApp:      return "app.dashed"
+        case .shellCommand: return "terminal"
+        }
+    }
 }
 
 // MARK: - Modifier symbol helper (delegates to KeyDisplay)

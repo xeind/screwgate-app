@@ -59,9 +59,10 @@ struct SidebarView: View {
 
             // ── Sublayers ──────────────────────────────────────────────
             Section {
-                ForEach(appState.sublayers) { sublayer in
+                ForEach(Array(appState.sublayers.enumerated()), id: \.element.id) { index, sublayer in
                     SublayerRow(
                         sublayer: sublayer,
+                        color: SublayerPalette.color(at: index),
                         onEdit: { onEditSublayer(sublayer) },
                         onDelete: { appState.deleteSublayer(id: sublayer.id) }
                     )
@@ -136,6 +137,7 @@ struct SidebarView: View {
 
 struct SublayerRow: View {
     let sublayer: Sublayer
+    let color: Color
     let onEdit: () -> Void
     let onDelete: () -> Void
 
@@ -151,14 +153,14 @@ struct SublayerRow: View {
                     .frame(width: 20, height: 20)
                     .background {
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.accentColor)
+                            .fill(color)
                         RoundedRectangle(cornerRadius: 5)
                             .fill(LinearGradient(
                                 colors: [.white.opacity(0.2), .clear],
                                 startPoint: .top, endPoint: .bottom
                             ))
                     }
-                    .shadow(color: Color.accentColor.opacity(0.4), radius: 2, x: 0, y: 1)
+                    .shadow(color: color.opacity(0.4), radius: 2, x: 0, y: 1)
             }
 
             Spacer()

@@ -20,6 +20,7 @@
 		60CE816FADE2BA844BE2FDEA /* Presets.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13E9BFA1CA7971E0471EA38 /* Presets.swift */; };
 		9B2B60E5D4FDC3548C12C565 /* ConfigWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6FD30E217B7C32A9707B53C /* ConfigWriter.swift */; };
 		9BABA6A4A8D96B7A9A1F3A87 /* AddLayerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9030D1398A30D4AA7D8C0DE4 /* AddLayerSheet.swift */; };
+		A58969002305173114992F73 /* SublayerPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DA8C003D630A693B2A3C3A /* SublayerPalette.swift */; };
 		A7CF038A7444220AEBC15F93 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0C89DC0AF5064A2BB126E73 /* AppState.swift */; };
 		AC99D01CE4B5A76A7721E1F2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B735C3D93A91AC72B9FA9299 /* Assets.xcassets */; };
 		C2C9D7477272B183478F0F3D /* KarabinerModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6664086E9CB03DF0449A127B /* KarabinerModels.swift */; };
@@ -50,6 +51,7 @@
 		D3B1A5C021D79C7034622A42 /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		D6FD30E217B7C32A9707B53C /* ConfigWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigWriter.swift; sourceTree = "<group>"; };
 		E052044B6D00AE002336CEE2 /* Screwgate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Screwgate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4DA8C003D630A693B2A3C3A /* SublayerPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SublayerPalette.swift; sourceTree = "<group>"; };
 		F2706244CF353DF5E9E27997 /* KeyRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyRecorder.swift; sourceTree = "<group>"; };
 		F2F5B53CE1146291B9B0326E /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -111,6 +113,7 @@
 				941F87763E501E60B508F51A /* KeyCodeMap.swift */,
 				C6EB85C100684F430E09954E /* KeyDisplay.swift */,
 				F2706244CF353DF5E9E27997 /* KeyRecorder.swift */,
+				E4DA8C003D630A693B2A3C3A /* SublayerPalette.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -225,6 +228,7 @@
 				00A6BA2B0620FF1AEFBE43DF /* ScrewgateApp.swift in Sources */,
 				5BCA8A1CBCB6432D6ACF658D /* SidebarView.swift in Sources */,
 				4CC1187EB3BBAE4BB4503C92 /* StatusBarView.swift in Sources */,
+				A58969002305173114992F73 /* SublayerPalette.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
