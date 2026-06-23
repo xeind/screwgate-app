@@ -7,6 +7,7 @@ import UniformTypeIdentifiers
 struct AddLayerSheet: View {
     @Environment(\.dismiss) private var dismiss
     let existingLayer: Layer?
+    let existingKeys: Set<String>
     let onSave: (Layer) -> Void
 
     @State private var triggerKey: String
@@ -18,8 +19,9 @@ struct AddLayerSheet: View {
     @State private var showAppPicker = false
     @StateObject private var keyRecorder = KeyRecorder()
 
-    init(existingLayer: Layer?, onSave: @escaping (Layer) -> Void) {
+    init(existingLayer: Layer?, existingKeys: Set<String> = [], onSave: @escaping (Layer) -> Void) {
         self.existingLayer = existingLayer
+        self.existingKeys  = existingKeys
         self.onSave = onSave
         _triggerKey       = State(initialValue: existingLayer?.triggerKey ?? "")
         _actionType       = State(initialValue: existingLayer?.actionType ?? .keyPress)
@@ -28,7 +30,12 @@ struct AddLayerSheet: View {
         _layerDescription = State(initialValue: existingLayer?.layerDescription ?? "")
     }
 
-    private var isValid: Bool { !triggerKey.isEmpty && !actionValue.isEmpty }
+    private var keyConflict: String? {
+        guard !triggerKey.isEmpty, existingKeys.contains(triggerKey) else { return nil }
+        return "Already used by another direct binding"
+    }
+
+    private var isValid: Bool { !triggerKey.isEmpty && !actionValue.isEmpty && keyConflict == nil }
 
     var body: some View {
         BindingFormView(
@@ -43,6 +50,7 @@ struct AddLayerSheet: View {
             showAppPicker: $showAppPicker,
             keyRecorder: keyRecorder,
             isValid: isValid,
+            conflictWarning: keyConflict,
             saveLabel: existingLayer == nil ? "Add" : "Save"
         ) {
             let layer = Layer(
@@ -71,6 +79,7 @@ struct AddBindingSheet: View {
     let existingBinding: KeyBinding?
     let sublayerName: String
     let sublayerKey: String
+    let existingKeys: Set<String>
     let onSave: (KeyBinding) -> Void
 
     @State private var triggerKey: String
@@ -83,10 +92,12 @@ struct AddBindingSheet: View {
     @StateObject private var keyRecorder = KeyRecorder()
 
     init(existingBinding: KeyBinding?, sublayerName: String, sublayerKey: String,
-         prefillKey: String? = nil, onSave: @escaping (KeyBinding) -> Void) {
+         existingKeys: Set<String> = [], prefillKey: String? = nil,
+         onSave: @escaping (KeyBinding) -> Void) {
         self.existingBinding = existingBinding
         self.sublayerName    = sublayerName
         self.sublayerKey     = sublayerKey
+        self.existingKeys    = existingKeys
         self.onSave = onSave
         _triggerKey         = State(initialValue: existingBinding?.triggerKey ?? prefillKey ?? "")
         _actionType         = State(initialValue: existingBinding?.actionType ?? .keyPress)
@@ -95,7 +106,12 @@ struct AddBindingSheet: View {
         _bindingDescription = State(initialValue: existingBinding?.bindingDescription ?? "")
     }
 
-    private var isValid: Bool { !triggerKey.isEmpty && !actionValue.isEmpty }
+    private var keyConflict: String? {
+        guard !triggerKey.isEmpty, existingKeys.contains(triggerKey) else { return nil }
+        return "Already used by another binding in this sublayer"
+    }
+
+    private var isValid: Bool { !triggerKey.isEmpty && !actionValue.isEmpty && keyConflict == nil }
 
     var body: some View {
         BindingFormView(
@@ -110,6 +126,7 @@ struct AddBindingSheet: View {
             showAppPicker: $showAppPicker,
             keyRecorder: keyRecorder,
             isValid: isValid,
+            conflictWarning: keyConflict,
             saveLabel: existingBinding == nil ? "Add" : "Save"
         ) {
             let binding = KeyBinding(
@@ -145,6 +162,7 @@ struct BindingFormView: View {
     @Binding var showAppPicker: Bool
     let keyRecorder: KeyRecorder
     let isValid: Bool
+    let conflictWarning: String?
     let saveLabel: String
     let onSave: () -> Void
     let onCancel: () -> Void
@@ -159,26 +177,34 @@ struct BindingFormView: View {
 
             // Trigger key
             FormSection("Trigger Key") {
-                HStack(spacing: 8) {
-                    TextField("e.g. j", text: $triggerKey)
-                        .textFieldStyle(.roundedBorder)
-                        .frame(width: 70)
-                        .onChange(of: triggerKey) { _, val in
-                            triggerKey = String(val.lowercased().prefix(20))
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        TextField("e.g. j", text: $triggerKey)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 70)
+                            .onChange(of: triggerKey) { _, val in
+                                triggerKey = String(val.lowercased().prefix(20))
+                            }
+
+                        Button(action: toggleRecording) {
+                            Label(isRecording ? "Listening…" : "Record",
+                                  systemImage: isRecording ? "waveform.circle.fill" : "record.circle")
+                                .frame(width: 95)
                         }
+                        .buttonStyle(.bordered)
+                        .tint(isRecording ? .red : .accentColor)
 
-                    Button(action: toggleRecording) {
-                        Label(isRecording ? "Listening…" : "Record",
-                              systemImage: isRecording ? "waveform.circle.fill" : "record.circle")
-                            .frame(width: 95)
+                        if !triggerKey.isEmpty {
+                            Text(KeyDisplay.symbol(for: triggerKey))
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    .buttonStyle(.bordered)
-                    .tint(isRecording ? .red : .accentColor)
 
-                    if !triggerKey.isEmpty {
-                        Text(KeyDisplay.symbol(for: triggerKey))
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundColor(.secondary)
+                    if let warning = conflictWarning {
+                        Label(warning, systemImage: "exclamationmark.triangle.fill")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
                     }
                 }
             }

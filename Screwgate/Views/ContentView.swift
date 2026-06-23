@@ -45,10 +45,12 @@ struct ContentView: View {
 
         // ── Sheets ───────────────────────────────────────────────────────
         .sheet(isPresented: $showAddLayer) {
-            AddLayerSheet(existingLayer: nil) { appState.addLayer($0) }
+            let usedKeys = Set(appState.layers.map { $0.triggerKey })
+            AddLayerSheet(existingLayer: nil, existingKeys: usedKeys) { appState.addLayer($0) }
         }
         .sheet(item: $editingLayer) { layer in
-            AddLayerSheet(existingLayer: layer) { appState.updateLayer($0) }
+            let usedKeys = Set(appState.layers.filter { $0.id != layer.id }.map { $0.triggerKey })
+            AddLayerSheet(existingLayer: layer, existingKeys: usedKeys) { appState.updateLayer($0) }
         }
         .sheet(isPresented: $showAddSublayer) {
             AddSublayerSheet(existingSublayer: nil) { appState.addSublayer($0) }
@@ -60,10 +62,12 @@ struct ContentView: View {
         }
         .sheet(item: $addBindingToSublayer) { item in
             if let sub = appState.sublayers.first(where: { $0.id == item.id }) {
+                let usedKeys = Set(sub.bindings.map { $0.triggerKey })
                 AddBindingSheet(
                     existingBinding: nil,
                     sublayerName: sub.name,
                     sublayerKey: sub.key,
+                    existingKeys: usedKeys,
                     prefillKey: item.prefillKey
                 ) {
                     appState.addBinding($0, to: item.id)
@@ -72,10 +76,12 @@ struct ContentView: View {
         }
         .sheet(item: $editingBinding) { item in
             if let sub = appState.sublayers.first(where: { $0.id == item.sublayerID }) {
+                let usedKeys = Set(sub.bindings.filter { $0.id != item.binding.id }.map { $0.triggerKey })
                 AddBindingSheet(
                     existingBinding: item.binding,
                     sublayerName: sub.name,
-                    sublayerKey: sub.key
+                    sublayerKey: sub.key,
+                    existingKeys: usedKeys
                 ) { appState.updateBinding($0, in: item.sublayerID) }
             }
         }
